@@ -86,6 +86,114 @@ class XcodeSpec: QuickSpec {
 			}
 		}
 
+		describe("build cache") {
+			context("when the Cartfile.resolved has commitish for a repository and built framework") {
+				let project1 = Project(directoryURL: directoryURL)
+
+				beforeEach {
+					let macPath = buildFolderURL.URLByAppendingPathComponent("Mac/Archimedes.framework").path!
+					var isDirectory: ObjCBool = true
+					if NSFileManager.defaultManager().fileExistsAtPath(macPath, isDirectory: &isDirectory) {
+						try! NSFileManager.defaultManager().removeItemAtPath(macPath)
+					}
+					//setup a directory with a Cartfile.resolved and a Carthage/Build folder with a built framework
+					_ = project1.buildCheckedOutDependenciesWithConfiguration("Debug", dependenciesToBuild: ["Archimedes"], forPlatforms: [Platform.Mac], derivedDataPath: "")
+						.wait()
+
+					Task.waitForAllTaskTermination()
+				}
+
+				afterEach {
+					//delete the Build folder
+					let macPath = buildFolderURL.URLByAppendingPathComponent("Mac/Archimedes.framework").path!
+					var isDirectory: ObjCBool = true
+					if NSFileManager.defaultManager().fileExistsAtPath(macPath, isDirectory: &isDirectory) {
+						try! NSFileManager.defaultManager().removeItemAtPath(macPath)
+					}
+				}
+
+				context("when the version file does not exist") {
+
+					beforeEach {
+						//remove the .version if it exists
+
+					}
+
+					it("should build the framework") {
+						//TODO
+						//keep track of the existing framework's sha
+
+						// build it again
+
+						//assert that the built framework's sha is different
+					}
+
+					it("should create a version file with the commitish") {
+						//TODO
+						//
+					}
+
+					it("should create a version file with the sha of the built framework") {
+						//TODO
+					}
+				}
+
+				context("when the version file exists") {
+					beforeEach {
+						//add the version file with the commitish and the sha of the built framework
+					}
+
+					context("when the commitish and framework sha matches the content of the version file") {
+						fit("should not rebuild the framework") {
+							//keep track of the existing framework's sha
+							return
+							let macPath = buildFolderURL.URLByAppendingPathComponent("Mac/Archimedes.framework/Archimedes").path!
+
+							let taskDescription = Task("/usr/bin/env", arguments: ["openssl", "sha1", macPath])
+
+							// Run the task, ignoring the output, and do something with the final result.
+							func getSHA1(taskDescription: Task) -> String {
+								let result: Result<String, TaskError>? = launchTask(taskDescription)
+									.ignoreTaskData()
+									.map { String(data: $0, encoding: NSUTF8StringEncoding) }
+									.ignoreNil()
+									.single()
+								let output = result?.value ?? ""
+								let range = output.rangeOfString(" ")!
+								let distance = output.startIndex.distanceTo(range.startIndex)
+								let startIndex = output.startIndex.successor().advancedBy(distance)
+								let range2 = startIndex..<output.endIndex
+								return output[range2]
+							}
+
+							let oldSHA1 = getSHA1(taskDescription)
+
+							_ = project1.buildCheckedOutDependenciesWithConfiguration("Debug", dependenciesToBuild: ["Archimedes"], forPlatforms: [Platform.Mac], derivedDataPath: "")
+								.wait()
+
+							Task.waitForAllTaskTermination()
+							
+							let newSHA1 = getSHA1(taskDescription)
+							expect(oldSHA1).to(equal(newSHA1))
+						}
+					}
+
+					context("when the commitish does not match the commitish in the version file") {
+						it("should build the framework") {
+							//TODO
+						}
+					}
+
+					context("when the framework's sha does not match the sha in the version file") {
+						it("should build the framework") {
+							//TODO
+						}
+					}
+				}
+			}
+		}
+
+
 		it("should build for all platforms") {
 			let dependencies = [
 				ProjectIdentifier.GitHub(Repository(owner: "github", name: "Archimedes")),

@@ -573,6 +573,7 @@ public final class Project {
 			}
 	}
 
+	//x
 	/// Checks out the dependencies listed in the project's Cartfile.resolved,
 	/// optionally they are limited by the given list of dependency names.
 	public func checkoutResolvedDependencies(dependenciesToCheckout: [String]? = nil) -> SignalProducer<(), CarthageError> {
@@ -635,6 +636,12 @@ public final class Project {
 					return .empty
 				}
 
+				//x
+//				let versionFilePath = dependencyPath.URLByAppendingPathComponent(dependency.project.relativePath, isDirectory: true).path!
+				let dependencyBinariesURL = self.directoryURL.URLByAppendingPathComponent(CarthageBinariesFolderPath, isDirectory: true)
+//				if !NSFileManager.defaultManager().fileExistsAtPath(dependencyPath) {
+//				if dependency.version.commitish ==  {
+//				}
 				return buildDependencyProject(dependency.project, self.directoryURL, withConfiguration: configuration, platforms: platforms, derivedDataPath: derivedDataPath, sdkFilter: sdkFilter)
 					.flatMapError { error in
 						switch error {
